@@ -1,7 +1,30 @@
 [project]
 name = "gmail-ai-sorter"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-powered Gmail organizer using CrewAI and Gemini"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.11"
+
+dependencies = [
+    "crewai>=0.1.0",
+    "google-generativeai>=0.3.0",
+    "google-api-python-client>=2.100.0",
+    "google-auth-httplib2>=0.1.1",
+    "google-auth-oauthlib>=1.1.0",
+    "streamlit>=1.28.0",
+    "python-dotenv>=1.0.0",
+    "loguru>=0.7.2",
+    "pydantic>=2.4.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "ipython>=8.0.0",
+]
+
+[project.scripts]
+app = "ui.app:main"
+test = "pytest tests/"
