@@ -12,7 +12,7 @@ from oauthlib.oauth2.rfc6749.endpoints import metadata
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 
-def test_gmail_connection():
+def get_gmail_service():
     creds = None
     token_file = 'token.pickle'
 
@@ -56,7 +56,7 @@ def fetch_recent_emails_for_analysis(service, max_results: int = 10) -> List[Dic
         msg = service.users().messages().get(
             userId='me',
             id=msg_id,
-            format='metdata',
+            format='metadata',
             metadataHeaders=['From', 'Subject', 'Date']
         ).execute()
 
