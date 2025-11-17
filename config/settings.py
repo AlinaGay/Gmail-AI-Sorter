@@ -47,7 +47,8 @@ class Settings:
         if not cls.GEMINI_API_KEY:
             errors.append("GEMINI_API_KEY not found in .env")
         if not cls.CREDENTIALS_FILE.exists():
-            errors.append(f"Gmail credentials not found at {cls.CREDENTIALS_FILE}")
+            errors.append(
+                f"Gmail credentials not found at {cls.CREDENTIALS_FILE}")
         if errors:
             raise ValueError("Configuration errors:\n" + "\n".join(errors))
 

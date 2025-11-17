@@ -213,3 +213,4 @@ credentials.json
 .DS_Store
 *.swp
 *.swo
+config/credentials.json
