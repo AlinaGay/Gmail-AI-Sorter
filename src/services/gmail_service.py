@@ -36,7 +36,7 @@ def get_gmail_service():
     return service
 
 
-def fetch_recent_emails_for_analysis(service, max_results: int = 10) -> List[Dict]:
+def fetch_recent_emails_for_analysis(service, max_results: int = 50) -> List[Dict]:
     label_list = service.users().labels().list(userId='me').execute()
     labels = {
         label['id']: label['name']
