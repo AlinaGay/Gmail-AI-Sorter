@@ -3,6 +3,7 @@ from typing import List, Dict
 from src.agents.base_agent import BaseAgent
 import json
 
+from src.services.email_data_service import EmailDataService
 from src.services.gmail_service import fetch_recent_emails_for_analysis
 
 
@@ -10,21 +11,15 @@ class EmailAnalyzer(BaseAgent):
     """Email parsing agent"""
 
     def __init__(self, gemini_model, gmail_service):
-        super.__init__("EmailAnalyzer", gemini_model)
-        self.gmail_service = gmail_service
+        super().__init__("EmailAnalyzer", gemini_model)
+        self.data_service = EmailDataService(gmail_service)
 
     def execute(self, num_emails: int = 100) -> Dict:
         """Analyzes emails and suggests categories."""
-        self.log(f"Analyzing {num_emails} emails...")
+        emails = self.data_service.fetch_emails(num_emails)
+        self.log(f"Analyzing {emails} emails...")
 
-        emails = fetch_recent_emails_for_analysis(
-            self.gmail_service,
-            max_results=num_emails
-        )
-
-        self.log(f"Analyzing {len(emails)} emails ...")
-
-        email_text = self._format_for_prompt(emails)
+        email_text = self.data_service.format_for_gemini(emails)
 
         prompt = f"""
                 Analyze these emails and suggest folder categories.
@@ -52,18 +47,18 @@ class EmailAnalyzer(BaseAgent):
             return result
         except json.JSONDecodeError:
             self.log("Failed to parse Gemini response")
-            return {"categories:" []}
+            return {"categories": []}
 
-    def _format_for_prompt(self, emails: List[Dict]) -> str:
-        """Formats already received emails for prompting"""
-        lines = []
+    # def _format_for_prompt(self, emails: List[Dict]) -> str:
+    #     """Formats already received emails for prompting"""
+    #     lines = []
 
-        for email in emails[:50]:
-            lines.append(f"""
-                ID: {email['id']}
-                From: From: {email.get('from', 'Unknown')}
-                Subject: {email.get('subject', 'No subject')}
-                Current Labels: {', '.join(email.get('labels', []))}
-                Preview: {email.get('snippet', '')[:100]}
-            ----""")
-        return '\n'.join(lines)
+    #     for email in emails[:50]:
+    #         lines.append(f"""
+    #             ID: {email['id']}
+    #             From: From: {email.get('from', 'Unknown')}
+    #             Subject: {email.get('subject', 'No subject')}
+    #             Current Labels: {', '.join(email.get('labels', []))}
+    #             Preview: {email.get('snippet', '')[:100]}
+    #         ----""")
+    #     return '\n'.join(lines)

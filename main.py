@@ -4,39 +4,32 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 from src.services.gmail_service import (
-    get_gmail_service,
-    fetch_recent_emails_for_analysis
+    get_gmail_service
 )
 from src.services.gemini_service import (
     setup_gemini,
     classify_email_with_gemini
 )
+from src.services.email_data_service import EmailDataService
+from src.agents.email_analyzer import EmailAnalyzer
 
 load_dotenv()
 
 
-def emails_classification():
+def main():
     """Simple analyze of emails"""
 
     print("Connecting to Gmail ...")
-    service = get_gmail_service()
-    print("Fetching emails ...")
-    emails = fetch_recent_emails_for_analysis(service)
+    gmail_service = get_gmail_service()
 
     print("Analyzing with Gemini")
-    model = setup_gemini()
+    gemini_model = setup_gemini()
 
-    for email in emails:
-        category = classify_email_with_gemini(model, email)
-        print("---------------")
-        print(f"Subject: {email['subject']}")
-        print(f"From:    {email['from']}")
-        print(f"Labels:  {email['labels']}")
-        print(f"Snippet: {email['snippet'][:120]}...")
-        print(f"Gemini category: {category}")
+    analyzer = EmailAnalyzer(gemini_model, gmail_service)
+    results = analyzer.execute(num_emails=50)
 
-    return True
+    print(f"Found categories: {results}")
 
 
 if __name__ == "__main__":
-    emails_classification()
+    main()
