@@ -49,16 +49,3 @@ class EmailAnalyzer(BaseAgent):
             self.log("Failed to parse Gemini response")
             return {"categories": []}
 
-    # def _format_for_prompt(self, emails: List[Dict]) -> str:
-    #     """Formats already received emails for prompting"""
-    #     lines = []
-
-    #     for email in emails[:50]:
-    #         lines.append(f"""
-    #             ID: {email['id']}
-    #             From: From: {email.get('from', 'Unknown')}
-    #             Subject: {email.get('subject', 'No subject')}
-    #             Current Labels: {', '.join(email.get('labels', []))}
-    #             Preview: {email.get('snippet', '')[:100]}
-    #         ----""")
-    #     return '\n'.join(lines)
