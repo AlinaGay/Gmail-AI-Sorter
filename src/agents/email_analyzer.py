@@ -40,10 +40,19 @@ class EmailAnalyzer(BaseAgent):
                 }}
               """
         response = self.gemini_model.generate_content(prompt)
+        raw = response.text
+        self.log(f"Raw Gemini response: {repr(raw)}")
 
         try:
-            result = json.loads(response.text)
-            self.log(f"Found {len(result['categories'])} categories")
+            start = raw.find("{")
+            end = raw.rfind("}")
+            if start == -1 or end == -1:
+                raise json.JSONDecodeError("No JSON object found", raw, 0)
+
+            json_str = raw[start:end + 1]
+            result = json.loads(json_str)
+
+            self.log(f"Found {len(result.get('categories', []))} categories")
             return result
         except json.JSONDecodeError:
             self.log("Failed to parse Gemini response")
