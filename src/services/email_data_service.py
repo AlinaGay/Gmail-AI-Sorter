@@ -15,6 +15,17 @@ class Email:
     snippet: str
     labels: List[str]
     date: str
+    
+    def __str__(self) -> str:
+        """Standard method for string output"""
+        return f"""id: {self.id}
+                thread_id: {self.thread_id}
+                subject: {self.subject}
+                from_addr: {self.from_addr}
+                snippet: {self.snippet[:100]}...
+                labels: {self.labels}
+                date: {self.date}
+               """
 
     def to_prompt_format(self) -> str:
         """Formatting for prompt"""
@@ -73,3 +84,7 @@ class EmailDataService:
         """Receives emails by ID from the cache"""
         all_emails = self._cache.get('emails_100', [])
         return [e for e in all_emails if e.id in email_ids]
+
+    def format_emails_for_log(self, emails: List[Email]) -> str:
+        """Formatting emails for dividing them by empty line"""
+        return '\n\n'.join(str(email) for email in emails)
