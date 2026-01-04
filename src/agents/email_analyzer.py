@@ -1,10 +1,9 @@
 # src/agents/email_analyzer.py
-from typing import List, Dict
+from typing import Dict
 from src.agents.base_agent import BaseAgent
 import json
 
 from src.services.email_data_service import EmailDataService
-from src.services.gmail_service import fetch_recent_emails_for_analysis
 
 
 class EmailAnalyzer(BaseAgent):

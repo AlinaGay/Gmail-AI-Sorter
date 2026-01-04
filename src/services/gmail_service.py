@@ -65,9 +65,9 @@ def fetch_recent_emails_for_analysis(service, max_results: int = 50) -> List[Dic
 
         email_data = {
             "id": msg_id,
-            "threadId": msg.get("threadId"),
+            "thread_id": msg.get("threadId"),
             "labels": [labels.get(lid, lid) for lid in msg.get('labelIds', [])],
-            "from": headers_dict.get('From'),
+            "from_addr": headers_dict.get('From'),
             "subject": headers_dict.get('Subject'),
             "date": headers_dict.get('Date'),
             "snippet": msg.get('snippet', ''),

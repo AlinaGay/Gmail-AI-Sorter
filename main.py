@@ -3,14 +3,8 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-from src.services.gmail_service import (
-    get_gmail_service
-)
-from src.services.gemini_service import (
-    setup_gemini,
-    classify_email_with_gemini
-)
-from src.services.email_data_service import EmailDataService
+from src.services.gmail_service import get_gmail_service
+from src.services.gemini_service import setup_gemini
 from src.agents.email_analyzer import EmailAnalyzer
 
 load_dotenv()
