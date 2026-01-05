@@ -60,9 +60,9 @@ class EmailDataService:
         emails = [
             Email(
                 id=email['id'],
-                thread_id=email.get('threadId', ''),
+                thread_id=email.get('thread_id', ''),
                 subject=email.get('subject', ''),
-                from_addr=email.get('from', ''),
+                from_addr=email.get('from_addr', ''),
                 snippet=email.get('snippet', ''),
                 labels=email.get('labels', []),
                 date=email.get('date', '')
@@ -75,7 +75,7 @@ class EmailDataService:
 
         return emails
 
-    def format_for_gemini(self, emails: List[Email], max_emails: int = 50) -> str:
+    def format_for_gemini(self, emails: List[Email], max_emails: int = 10) -> str:
         """Formats emails for the Gemini prompt"""
         formatted = [email.to_prompt_format() for email in emails[:max_emails]]
         return '\n---\n'.join(formatted)

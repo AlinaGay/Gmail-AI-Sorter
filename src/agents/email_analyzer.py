@@ -1,7 +1,11 @@
 # src/agents/email_analyzer.py
-from typing import Dict
-from src.agents.base_agent import BaseAgent
 import json
+import time
+
+from typing import Dict
+from google.api_core.exceptions import ResourceExhausted
+from IPython.core.inputtransformer2 import tr
+from src.agents.base_agent import BaseAgent
 
 from src.services.email_data_service import EmailDataService
 
@@ -13,7 +17,7 @@ class EmailAnalyzer(BaseAgent):
         super().__init__("EmailAnalyzer", gemini_model)
         self.data_service = EmailDataService(gmail_service)
 
-    def execute(self, num_emails: int = 100) -> Dict:
+    def execute(self, num_emails: int = 100, max_retries: int = 3) -> Dict:
         """Analyzes emails and suggests categories."""
         emails = self.data_service.fetch_emails(num_emails)
 
@@ -40,7 +44,24 @@ class EmailAnalyzer(BaseAgent):
                     ]
                 }}
               """
-        response = self.gemini_model.generate_content(prompt)
+        response = None
+        for attempt in range(max_retries):
+            try:
+                response = self.gemini_model.generate_content(prompt)
+                break
+            except ResourceExhausted:
+                wait_time = 60
+                self.log(f"Quota exceed. Waiting {wait_time}s...(attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    time.sleep(wait_time)
+                else:
+                    self.log("Max retries reached. Aborting.")
+                    return {"categories": [], "error": "Quota exceeded"}
+
+        if response is None:
+            self.log("Failed to get response from Gemini")
+            return {"categories": [], "error": "No response"}
+
         raw = response.text
         self.log(f"Raw Gemini response: {repr(raw)}")
 

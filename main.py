@@ -16,11 +16,12 @@ def main():
     print("Connecting to Gmail ...")
     gmail_service = get_gmail_service()
 
-    print("Analyzing with Gemini")
+    print("Connecting with Gemini")
     gemini_model = setup_gemini()
 
+    print("Analyzing with Gemini")
     analyzer = EmailAnalyzer(gemini_model, gmail_service)
-    results = analyzer.execute(num_emails=50)
+    results = analyzer.execute(num_emails=10)
 
     print(f"Found categories: {results}")
 

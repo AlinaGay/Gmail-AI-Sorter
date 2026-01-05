@@ -14,32 +14,6 @@ def setup_gemini():
         return False
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     return model
-
-
-def classify_email_with_gemini(model, email: dict) -> str:
-    prompt = f"""
-        You are an email classification assistant.
-
-        Classify the following email into one of the categories:
-        - PERSONAL
-        - WORK
-        - NEWSLETTER
-        - PROMOTION
-        - SOCIAL
-        - FINANCE
-        - OTHER
-
-        Return only the category name, nothing else.
-
-        From:{email.get('form')}
-        Subject: {email.get('subject')}
-        Snippet: {email.get('snippet')}
-        Existing Gmail labels: {", ".join(email.get('labels', []))}"""
-
-    response = model.generate_content(prompt)
-    category = response.text.strip()
-
-    return category
