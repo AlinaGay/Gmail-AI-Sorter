@@ -2,9 +2,8 @@
 import json
 import time
 
-from typing import Dict
+from typing import Dict, List
 from google.api_core.exceptions import ResourceExhausted
-from IPython.core.inputtransformer2 import tr
 from src.agents.base_agent import BaseAgent
 
 from src.services.email_data_service import EmailDataService
@@ -16,6 +15,18 @@ class EmailAnalyzer(BaseAgent):
     def __init__(self, gemini_model, gmail_service):
         super().__init__("EmailAnalyzer", gemini_model)
         self.data_service = EmailDataService(gmail_service)
+
+    def _format_categories_for_log(self, categories: List[Dict]):
+        """Formates categories for log output."""
+        formatted = []
+        for i, cat in enumerate(categories, 1):
+            cat_str =f"""Category {i}:
+            name: {cat.get('name', 'N/A')}
+            description: {cat.get('description', 'N/A')}
+            email_ids: {cat.get('email_ids', [])}
+            count: {cat.get('count', 0)}"""
+            formatted.append(cat_str)
+        return '\n\n' + ('-' * 50 + '\n\n').join(formatted)
 
     def execute(self, num_emails: int = 100, max_retries: int = 3) -> Dict:
         """Analyzes emails and suggests categories."""
@@ -74,7 +85,13 @@ class EmailAnalyzer(BaseAgent):
             json_str = raw[start:end + 1]
             result = json.loads(json_str)
 
-            self.log(f"Found {len(result.get('categories', []))} categories")
+            categories = result.get('categories', [])
+            self.log(f"Found {len(categories)} categories")
+
+            if categories:
+                formatted_categories = self._format_categories_for_log(categories)
+                self.log(formatted_categories)
+            
             return result
         except json.JSONDecodeError:
             self.log("Failed to parse Gemini response")
