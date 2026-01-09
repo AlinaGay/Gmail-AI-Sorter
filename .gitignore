@@ -214,3 +214,7 @@ credentials.json
 *.swp
 *.swo
 config/credentials.json
+
+
+check_models.py
+uv.lock
