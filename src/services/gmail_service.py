@@ -1,18 +1,32 @@
 # src/services/gmail_test.py
-from typing import Dict, List
+import pickle
+import os
+import time
+
+from typing import Dict, List, Optional
+from googleapiclient.discovery import Resource
+from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-import pickle
-import os
 
-from oauthlib.oauth2.rfc6749.endpoints import metadata
+from src.models.email import Email
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
+NUMBER_OF_EMAILS = 10
+
+SCOPES = [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.labels',
+    'https://www.googleapis.com/auth/gmail.modify'
+    ]
+
+DEFAULT_HEADERS = ['From', 'Subject', 'Date']
 
 
 def get_gmail_service():
+    """Takes authorized Gmail API client."""
     creds = None
     token_file = 'token.pickle'
 
@@ -22,8 +36,12 @@ def get_gmail_service():
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                os.remove(token_file)
+                creds = None
+        if not creds:
             flow = InstalledAppFlow.from_client_secrets_file(
                 'config/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
@@ -31,12 +49,10 @@ def get_gmail_service():
         with open(token_file, 'wb') as token:
             pickle.dump(creds, token)
 
-    service = build('gmail', 'v1', credentials=creds)
-
-    return service
+    return build('gmail', 'v1', credentials=creds)
 
 
-def fetch_recent_emails_for_analysis(service, max_results: int = 10) -> List[Dict]:
+def fetch_recent_emails_for_analysis(service, max_results: int = NUMBER_OF_EMAILS) -> List[Dict]:
     label_list = service.users().labels().list(userId='me').execute()
     labels = {
         label['id']: label['name']
