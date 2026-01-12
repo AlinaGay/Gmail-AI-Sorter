@@ -91,3 +91,10 @@ def fetch_recent_emails_for_analysis(service, max_results: int = NUMBER_OF_EMAIL
 
         emails.append(email_data)
     return emails
+
+
+class GmailAPIClient:
+    """Low-level client for Gmail API."""
+    def __init__(self, service: Resource):
+        self.service = service
+        self._labels_cache: Optional[Dict[str, str]] = None

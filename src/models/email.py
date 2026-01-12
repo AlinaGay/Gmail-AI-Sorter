@@ -1,12 +1,11 @@
 # src/models/email.py
-
 from dataclasses import dataclass, field
 from typing import List, Dict
 
 
 @dataclass
 class Email:
-    """Dataclass for email"""
+    """Dataclass for email."""
     id: str
     thread_id: str
     subject: str
@@ -16,7 +15,7 @@ class Email:
     date: str
 
     def __str__(self) -> str:
-        """Standard method for string output"""
+        """Standard method for string output."""
         return (
             f"id: {self.id}\n"
             f"thread_id: {self.thread_id}\n"
@@ -28,7 +27,7 @@ class Email:
         )
 
     def to_prompt_format(self) -> str:
-        """Formatting for prompt"""
+        """Formatting for prompt."""
         return (
             f"ID: {self.id}\n"
             f"From: {self.from_addr}\n"
