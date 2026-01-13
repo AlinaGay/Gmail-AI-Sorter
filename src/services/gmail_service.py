@@ -1,9 +1,11 @@
 # src/services/gmail_test.py
+from email import message
 import pickle
 import os
 import time
 
 from typing import Dict, List, Optional
+from urllib import request
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
@@ -98,3 +100,69 @@ class GmailAPIClient:
     def __init__(self, service: Resource):
         self.service = service
         self._labels_cache: Optional[Dict[str, str]] = None
+
+    @property
+    def labels_map(self) -> Dict[str, str]:
+        """Cache mapping of label IDs."""
+        if self._labels_cache is None:
+            self._labels_cache = self._fetch_labels()
+        return self._labels_cache
+
+    def _fetch_labels(self) -> Dict[str, str]:
+        """Takes all labels from Gmail."""
+        try:
+            response = self.service.users().labels().list(userId='me').execute()
+            return {
+                label['id']: label['name']
+                for label in response.get('lables', [])
+            }
+        except HttpError as error:
+            print(f"Error fetching labels: {error}")
+            return {}
+
+    def fetch_emails(self, max_results: int = 10) -> List[Email]:
+        """Recieves emails from Gmail."""
+        try:
+            response = self.service.users().messages().list(
+                userId='me',
+                maxResults=max_results
+            ).execute()
+            messages = response.get('messages', [])
+            if not messages:
+                return []
+            return self._batch_fetch_details([message['id'] for mesage in messages])
+        
+        except HttpError as error:
+            print(f"Error fetching emails: {error}")
+            return {}
+
+    def _batch_fetch_details(self, message_ids: List[str]) -> List[Email]:
+        """Batch-request for email details."""
+        results: List[Dict] = []
+
+        def callback(request_id, response, exception):
+            if exception:
+                print(f"Error fetching {request_id}: {exception}")
+            else:
+                results.append(response)
+
+        batch = self.service.new_batch_http_request(callback=callable)
+
+        for message_id in message_ids:
+            batch.add(
+                self.service.users().messages().get(
+                    userId='me',
+                    id=message_id,
+                    format='metadata',
+                    metadataHeaders=DEFAULT_HEADERS
+                ),
+                request_id=message_id
+            )
+        batch.execute()
+
+        return [
+            Email.from_gmail_response(msg, self.labels_map)
+            for msg in results
+        ]
+
+
