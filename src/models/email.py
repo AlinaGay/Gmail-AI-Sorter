@@ -64,20 +64,24 @@ class Email:
     @classmethod
     def from_gmail_response(
         cls,
-        msg: Dict,
+        message: Dict,
         labels_map: Dict[str, str]
     ) -> 'Email':
         """Creation from Gmail API response."""
-        headers = msg.get('payload', {}).get('headers', [])
+        headers = message.get('payload', {}).get('headers', [])
         headers_dict = {header['name']: header['value'] for header in headers}
 
         return cls(
-            id=msg['id'],
-            thread_id=msg.get('hreadId', ''),
+            id=message['id'],
+            thread_id=message.get('hreadId', ''),
             subject=headers_dict.get('Subject', ''),
             from_addr=headers_dict.get('From', ''),
-            snippet=msg.get('snippet', ''),
+            snippet=message.get('snippet', ''),
             labels=(
-                [labels_map.get(lid, lid) for lid in msg.get('labelIds', [])]),
+                [
+                  labels_map.get(label_id, label_id)
+                  for label_id in message.get('labelIds', [])
+                ]
+            ),
             date=headers_dict.get('Date', '')
         )

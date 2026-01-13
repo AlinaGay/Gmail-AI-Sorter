@@ -1,5 +1,4 @@
 # src/services/gmail_test.py
-from email import message
 import pickle
 import os
 import time
@@ -54,47 +53,6 @@ def get_gmail_service():
     return build('gmail', 'v1', credentials=creds)
 
 
-def fetch_recent_emails_for_analysis(service, max_results: int = NUMBER_OF_EMAILS) -> List[Dict]:
-    label_list = service.users().labels().list(userId='me').execute()
-    labels = {
-        label['id']: label['name']
-        for label in label_list.get('labels', [])
-    }
-
-    message_list = service.users().messages().list(
-        userId='me',
-        maxResults=max_results
-    ).execute()
-
-    messages = message_list.get('messages', [])
-    emails = []
-
-    for message in messages:
-        msg_id = message['id']
-        msg = service.users().messages().get(
-            userId='me',
-            id=msg_id,
-            format='metadata',
-            metadataHeaders=['From', 'Subject', 'Date']
-        ).execute()
-
-        headers = msg.get('payload', {}).get('headers', [])
-        headers_dict = {header['name']: header['value'] for header in headers}
-
-        email_data = {
-            "id": msg_id,
-            "thread_id": msg.get("threadId"),
-            "labels": [labels.get(lid, lid) for lid in msg.get('labelIds', [])],
-            "from_addr": headers_dict.get('From'),
-            "subject": headers_dict.get('Subject'),
-            "date": headers_dict.get('Date'),
-            "snippet": msg.get('snippet', ''),
-        }
-
-        emails.append(email_data)
-    return emails
-
-
 class GmailAPIClient:
     """Low-level client for Gmail API."""
     def __init__(self, service: Resource):
@@ -111,7 +69,8 @@ class GmailAPIClient:
     def _fetch_labels(self) -> Dict[str, str]:
         """Takes all labels from Gmail."""
         try:
-            response = self.service.users().labels().list(userId='me').execute()
+            response = self.service.users().labels().list(
+                userId='me').execute()
             return {
                 label['id']: label['name']
                 for label in response.get('lables', [])
@@ -130,11 +89,15 @@ class GmailAPIClient:
             messages = response.get('messages', [])
             if not messages:
                 return []
-            return self._batch_fetch_details([message['id'] for mesage in messages])
-        
+            return self._batch_fetch_details(
+                [
+                    message['id'] for message in messages
+                ]
+            )
+
         except HttpError as error:
             print(f"Error fetching emails: {error}")
-            return {}
+            return []
 
     def _batch_fetch_details(self, message_ids: List[str]) -> List[Email]:
         """Batch-request for email details."""
@@ -161,8 +124,49 @@ class GmailAPIClient:
         batch.execute()
 
         return [
-            Email.from_gmail_response(msg, self.labels_map)
-            for msg in results
+            Email.from_gmail_response(message, self.labels_map)
+            for message in results
         ]
 
+    def get_all_labels(self) -> List[Dict]:
+        """Takes whole list of labels."""
+        labels = self._fetch_labels()
+        return [
+            {'id': label_id, 'name': name}
+            for label_id, name in labels.items()
+        ]
 
+    def create_label(self, name: str) -> Dict:
+        """Create a new label."""
+        for label_id, label_name in self.labels_map.items():
+            if label_name.lower() == name.lower():
+                return {'id': label_id, 'name': label_name, 'created': False}
+
+        body = {
+            'name': name,
+            'labelListVisibility': 'labelShow',
+            'messageListVisibility': 'show'
+        }
+        result = self.service.users().labels().create(
+            userId='me', body=body
+        ).execute()
+
+        self.labels_map[result['id']] = result['name']
+
+        return {'id': result['id'], 'name': result['name'], 'created': True}
+
+    def move_emails(self, email_ids: List[str], label_id: str) -> Dict:
+        """Moves emails to label."""
+        success, failed = [], []
+        for email_id in email_ids:
+            try:
+                self.service.users().message().modify(
+                    userId='me',
+                    id=email_id,
+                    body={'addLabelIds': [label_id]}
+                ).execute()
+                success.append(email_id)
+            except HttpError as error:
+                failed.append({'id': email_id, 'error': str(error)})
+
+        return {'success': success, 'failed': failed}
