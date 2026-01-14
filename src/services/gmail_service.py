@@ -1,13 +1,10 @@
 # src/services/gmail_test.py
 import pickle
 import os
-import time
 
 from typing import Dict, List, Optional
-from urllib import request
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
