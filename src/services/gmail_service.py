@@ -5,6 +5,7 @@ import os
 from typing import Dict, List, Optional
 from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
+from googleapiclient.http import BatchHttpRequest
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -20,7 +21,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/gmail.modify'
     ]
 
-DEFAULT_HEADERS = ['From', 'Subject', 'Date']
+DEFAULT_HEADERS = ['From', 'To', 'Subject', 'Date']
 
 
 def get_gmail_service():
@@ -106,19 +107,21 @@ class GmailAPIClient:
             else:
                 results.append(response)
 
-        batch = self.service.new_batch_http_request(callback=callback)
+        batch = BatchHttpRequest(callback=callback)
 
         for message_id in message_ids:
-            batch.add(
-                self.service.users().messages().get(
+            request = self.service.users().messages().get(
                     userId='me',
                     id=message_id,
                     format='metadata',
                     metadataHeaders=DEFAULT_HEADERS
-                ),
-                request_id=message_id
-            )
-        batch.execute()
+                )
+            batch.add(request, request_id=message_id)
+
+        try:
+            batch.execute()
+        except Exception as error:
+            print(f"Batch execution failed: {error}")
 
         return [
             Email.from_gmail_response(message, self.labels_map)
