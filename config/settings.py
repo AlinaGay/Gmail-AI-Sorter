@@ -32,7 +32,7 @@ class Settings:
     TOKEN_FILE = BASE_DIR / "config" / "token.pickle"
 
     # App settings
-    MAX_EMAILS_TO_ANALYZE = 100
+    MAX_EMAILS_TO_ANALYZE = 10
     MIN_EMAILS_PER_CATEGORY = 3
     MAX_CTEGORIES = 10
 

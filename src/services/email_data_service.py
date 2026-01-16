@@ -49,7 +49,11 @@ class EmailDataService:
         """Clear cache."""
         self._cache.clear()
 
-    def format_for_prompt(self, emails: List[Email], max_emails: int = 10) -> str:
+    def format_for_prompt(
+        self,
+        emails: List[Email],
+        max_emails: int = 10
+    ) -> str:
         """Formats emails for AI prompt"""
         formatted = [email.to_prompt_format() for email in emails[:max_emails]]
         return '\n---\n'.join(formatted)

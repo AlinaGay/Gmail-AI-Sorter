@@ -70,7 +70,7 @@ class GmailAPIClient:
                 userId='me').execute()
             return {
                 label['id']: label['name']
-                for label in response.get('lables', [])
+                for label in response.get('labels', [])
             }
         except HttpError as error:
             print(f"Error fetching labels: {error}")
@@ -106,7 +106,7 @@ class GmailAPIClient:
             else:
                 results.append(response)
 
-        batch = self.service.new_batch_http_request(callback=callable)
+        batch = self.service.new_batch_http_request(callback=callback)
 
         for message_id in message_ids:
             batch.add(
@@ -157,7 +157,7 @@ class GmailAPIClient:
         success, failed = [], []
         for email_id in email_ids:
             try:
-                self.service.users().message().modify(
+                self.service.users().messages().modify(
                     userId='me',
                     id=email_id,
                     body={'addLabelIds': [label_id]}
