@@ -61,7 +61,7 @@ class EmailDataService:
     def format_for_gemini(
         self,
         emails: List[Email],
-        max_emails: int = 10 
+        max_emails: int = 10
     ) -> str:
         """Alias for format_for_prompt."""
         return self.format_for_prompt(emails, max_emails)
