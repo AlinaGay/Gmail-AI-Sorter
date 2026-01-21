@@ -12,9 +12,9 @@ from src.services.email_data_service import EmailDataService
 class EmailAnalyzer(BaseAgent):
     """Email parsing agent"""
 
-    def __init__(self, gemini_model, gmail_service):
+    def __init__(self, gemini_model, email_service: EmailDataService):
         super().__init__("EmailAnalyzer", gemini_model)
-        self.data_service = EmailDataService(gmail_service)
+        self.email_service = email_service
 
     def _format_categories_for_log(self, categories: List[Dict]):
         """Formates categories for log output."""

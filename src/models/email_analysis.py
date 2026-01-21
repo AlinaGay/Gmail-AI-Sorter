@@ -14,6 +14,6 @@ class EmailAnalysis:
 
     def to_dict(self) -> Dict:
         return {
-            'categories':self.categories,
+            'categories': self.categories,
             'error': self.error
         }
