@@ -48,6 +48,22 @@ class EmailAnalyzer(BaseAgent):
             self.log(f"Quota exceed. Model call failed: {error}")
             return None
 
+    # def _parse_response(self, raw_response: str) -> EmailAnalysis:
+    #     """Parses JSON-answer from model."""
+    #     self.log(f"Raw response: {repr:(raw_response[:200])}...")
+
+    #     try:
+    #         json_str = 
+
+    def extract_json(self, text: str) -> str:
+        """Extracts JSON-object from ext."""
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start == -1 or end == -1:
+            raise json.JSONDecodeError("No JSON object found", text, 0)
+
+        return text[start:end + 1]
 
         # log_output = self.data_service.format_emails_for_log(emails)
         # self.log(f"Analyzing {len(emails)} emails: \n\n{log_output}")
