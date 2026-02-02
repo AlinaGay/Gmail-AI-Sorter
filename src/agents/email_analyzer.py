@@ -55,7 +55,7 @@ class EmailAnalyzer(BaseAgent):
     #     try:
     #         json_str = 
 
-    def extract_json(self, text: str) -> str:
+    def _extract_json(self, text: str) -> str:
         """Extracts JSON-object from ext."""
         start = text.find("{")
         end = text.rfind("}")
@@ -65,8 +65,12 @@ class EmailAnalyzer(BaseAgent):
 
         return text[start:end + 1]
 
-        # log_output = self.data_service.format_emails_for_log(emails)
-        # self.log(f"Analyzing {len(emails)} emails: \n\n{log_output}")
+    def _log_emails(self, emails: List) -> None:
+        """Logs recieved letters."""
+        log_output = self.email_service.format_for_log(emails)
+        self.log(f"Analyzing {len(emails)} emails:\n\n{log_output}")
+
+       
 
         # email_text = self.data_service.format_for_gemini(emails)
 
