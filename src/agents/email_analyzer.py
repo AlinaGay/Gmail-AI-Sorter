@@ -70,48 +70,16 @@ class EmailAnalyzer(BaseAgent):
         log_output = self.email_service.format_for_log(emails)
         self.log(f"Analyzing {len(emails)} emails:\n\n{log_output}")
 
-       
-
-        # email_text = self.data_service.format_for_gemini(emails)
-
-        
-        # response = None
-        # for attempt in range(max_retries):
-            
-
-        # if response is None:
-        #     self.log("Failed to get response from Gemini")
-        #     return {"categories": [], "error": "No response"}
-
-        # raw = response.text
-        # self.log(f"Raw Gemini response: {repr(raw)}")
-
-        # try:
-        #     start = raw.find("{")
-        #     end = raw.rfind("}")
-        #     if start == -1 or end == -1:
-        #         raise json.JSONDecodeError("No JSON object found", raw, 0)
-
-        #     json_str = raw[start:end + 1]
-        #     result = json.loads(json_str)
-
-        #     categories = result.get('categories', [])
-        #     self.log(f"Found {len(categories)} categories")
-
-        #     if categories:
-        #         formatted_categories = self._format_categories_for_log(categories)
-        #         self.log(formatted_categories)
-            
-        #     return result
-        # except json.JSONDecodeError:
-        #     self.log("Failed to parse Gemini response")
-        #     return {"categories": []}
+    def _log_categories(self, categories: List[Dict]) -> None:
+        """Logs founded categories."""
+        formatted = self._format_categories_for_log(categories)
+        self.log(f"Categories found:\n{formatted}")
 
     def _format_categories_for_log(self, categories: List[Dict]):
         """Formates categories for log output."""
         formatted = []
         for i, cat in enumerate(categories, 1):
-            cat_str =f"""Category {i}:
+            cat_str = f"""Category {i}:
             name: {cat.get('name', 'N/A')}
             description: {cat.get('description', 'N/A')}
             email_ids: {cat.get('email_ids', [])}
